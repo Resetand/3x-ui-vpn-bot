@@ -5,11 +5,12 @@ import json
 import logging
 from pathlib import Path
 
-from aiogram import Router, types
+from aiogram import Bot, Router, types
 from aiogram.filters import CommandStart
 from aiogram.types import BufferedInputFile
 
 from bot.config import Settings
+from bot.services.access import is_user_allowed
 from bot.services.provisioning import ensure_client_exists
 from bot.utils.qr import generate_qr_png
 from bot.xui.client import XUIClient
@@ -27,13 +28,24 @@ def _load_clients() -> dict:
 
 
 @router.message(CommandStart())
-async def handle_start(message: types.Message, settings: Settings, xui: XUIClient) -> None:
+async def handle_start(message: types.Message, settings: Settings, xui: XUIClient, bot: Bot) -> None:
     user = message.from_user
     if not user:
         return
 
-    # Access control
+    # Only respond in private chats
+    if message.chat.type != "private":
+        await message.answer("📩 Напишите мне в личные сообщения, чтобы получить VPN-ключ.")
+        return
+
+    # Access control: allowed Telegram IDs (static list)
     if settings.allowed_telegram_ids is not None and user.id not in settings.allowed_telegram_ids:
+        logger.info("Access denied for user %d: not in allowed_telegram_ids", user.id)
+        await message.answer("⛔ Доступ запрещён. Обратитесь к администратору.")
+        return
+
+    # Access control: group membership
+    if not await is_user_allowed(bot, user.id, settings.allowed_chat_id):
         await message.answer("⛔ Доступ запрещён. Обратитесь к администратору.")
         return
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from dotenv import load_dotenv
 
 
@@ -16,6 +16,7 @@ class Settings:
     xui_password: str
     xui_inbound_ids: list[int]
     allowed_telegram_ids: set[int] | None  # None means wildcard (*)
+    allowed_chat_id: int | None  # Telegram group/supergroup ID for membership check
     sub_url_base: str | None
     vless_flow: str
 
@@ -51,6 +52,9 @@ def load_settings() -> Settings:
     else:
         allowed_telegram_ids = set()  # empty = deny all
 
+    raw_chat_id = os.environ.get("ALLOWED_CHAT_ID", "").strip()
+    allowed_chat_id = int(raw_chat_id) if raw_chat_id else None
+
     sub_url_base = os.environ.get("SUB_URL_BASE", "").strip() or None
     vless_flow = os.environ.get("VLESS_FLOW", "").strip()
 
@@ -63,6 +67,7 @@ def load_settings() -> Settings:
         xui_password=xui_password,
         xui_inbound_ids=xui_inbound_ids,
         allowed_telegram_ids=allowed_telegram_ids,
+        allowed_chat_id=allowed_chat_id,
         sub_url_base=sub_url_base,
         vless_flow=vless_flow,
     )
