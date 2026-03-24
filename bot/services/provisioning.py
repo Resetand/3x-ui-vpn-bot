@@ -111,7 +111,11 @@ async def _provision(
             elif protocol == "shadowsocks":
                 client_data["password"] = client_uuid
                 method = inbound.get("settings", {}).get("method", "chacha20-ietf-poly1305")
-                client_data["method"] = method
+                # Shadowsocks 2022 multi-user: method must be empty string at client level
+                if method.startswith("2022-"):
+                    client_data["method"] = ""
+                else:
+                    client_data["method"] = method
             else:
                 # vless, vmess
                 client_data["id"] = client_uuid
