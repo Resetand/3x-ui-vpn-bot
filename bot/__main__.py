@@ -30,9 +30,6 @@ async def main() -> None:
         password=settings.xui_password,
     )
 
-    # Pre-login to validate credentials early
-    await xui.login()
-
     # Register handlers
     dp.include_router(start_router)
 
