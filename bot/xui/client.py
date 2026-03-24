@@ -15,10 +15,12 @@ class XUIAuthError(Exception):
 
 class XUIClient:
     def __init__(self, host: str, port: int, webbasepath: str, username: str, password: str) -> None:
-        self._base_url = f"http://{host}:{port}{webbasepath}"
+        is_localhost = host in ("localhost", "127.0.0.1")
+        protocol = "http" if is_localhost else "https"
+        self._base_url = f"{protocol}://{host}:{port}{webbasepath}"
         self._username = username
         self._password = password
-        self._client = httpx.AsyncClient(base_url=self._base_url, timeout=30.0, follow_redirects=True)
+        self._client = httpx.AsyncClient(base_url=self._base_url, timeout=30.0, follow_redirects=True, verify=not is_localhost)
         self._logged_in = False
 
     async def close(self) -> None:
