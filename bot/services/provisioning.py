@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
+import os
 import uuid
 from dataclasses import dataclass
 
@@ -109,12 +110,14 @@ async def _provision(
             if protocol == "trojan":
                 client_data["password"] = client_uuid
             elif protocol == "shadowsocks":
-                client_data["password"] = client_uuid
                 method = inbound.get("settings", {}).get("method", "chacha20-ietf-poly1305")
-                # Shadowsocks 2022 multi-user: method must be empty string at client level
+                # Shadowsocks 2022: password must be a base64-encoded key of correct length
                 if method.startswith("2022-"):
+                    key_len = 32 if "256" in method else 16
+                    client_data["password"] = base64.b64encode(os.urandom(key_len)).decode()
                     client_data["method"] = ""
                 else:
+                    client_data["password"] = client_uuid
                     client_data["method"] = method
             else:
                 # vless, vmess
