@@ -1,0 +1,110 @@
+from __future__ import annotations
+
+import html
+import json
+import logging
+from pathlib import Path
+
+from aiogram import Router, types
+from aiogram.filters import CommandStart
+from aiogram.types import BufferedInputFile
+
+from bot.config import Settings
+from bot.services.provisioning import ensure_client_exists
+from bot.utils.qr import generate_qr_png
+from bot.xui.client import XUIClient
+
+logger = logging.getLogger(__name__)
+router = Router()
+
+_CLIENTS_FILE = Path(__file__).resolve().parent.parent.parent / "clients_recommended.json"
+_PLATFORM_ORDER = ["ios", "android", "windows", "macos"]
+
+
+def _load_clients() -> dict:
+    with open(_CLIENTS_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+@router.message(CommandStart())
+async def handle_start(message: types.Message, settings: Settings, xui: XUIClient) -> None:
+    user = message.from_user
+    if not user:
+        return
+
+    # Access control
+    if settings.allowed_telegram_ids is not None and user.id not in settings.allowed_telegram_ids:
+        await message.answer("⛔ Доступ запрещён. Обратитесь к администратору.")
+        return
+
+    await message.answer("⏳ Настраиваю VPN-доступ, подождите...")
+
+    try:
+        result = await ensure_client_exists(
+            xui=xui,
+            user_id=user.id,
+            first_name=user.first_name or "User",
+            username=user.username,
+            inbound_ids=settings.xui_inbound_ids,
+            host=settings.xui_host,
+            sub_url_base=settings.sub_url_base,
+            vless_flow=settings.vless_flow,
+        )
+    except Exception:
+        logger.exception("Provisioning failed for user %d", user.id)
+        await message.answer("❌ Произошла ошибка при настройке VPN. Попробуйте позже или обратитесь к администратору.")
+        return
+
+    if not result.sub_url:
+        await message.answer("⚠️ Не удалось создать подключения. Обратитесь к администратору.")
+        return
+
+    # 1. QR + copyable subscription link
+    qr_buf = generate_qr_png(result.sub_url)
+    await message.answer_photo(
+        BufferedInputFile(qr_buf.read(), filename="subscription_qr.png"),
+        caption=f"🔑 Ваш ключ-ссылка:\n\n<code>{html.escape(result.sub_url)}</code>",
+        parse_mode="HTML",
+    )
+
+    # 2. Setup instructions
+    clients = _load_clients()
+    await message.answer(
+        _build_instructions(clients),
+        parse_mode="HTML",
+        disable_web_page_preview=True,
+    )
+
+
+def _build_instructions(clients: dict) -> str:
+    parts: list[str] = [
+        "🟢 <b>VPN настроен!</b>",
+        "Теперь нужно подключиться — это займёт 1–2 минуты 👇\n",
+        "📱 <b>Шаг 1. Установите приложение-клиент</b>\n",
+        "Ниже перечислены рекомендуемые приложения для разных платформ. Однако подойдут любые клиенты, поддерживающие VLESS и импорт конфигурации по ссылке/QR-коду. <a href=\"https://resetand.github.io/vpn-clients/\">Подробнее в небольшой статье</a>.\n",
+    ]
+
+    for key in _PLATFORM_ORDER:
+        platform = clients.get(key)
+        if not platform:
+            continue
+
+        if recommended_client := next((c for c in platform["clients"] if c.get("recommended")), None):
+            name = html.escape(recommended_client["name"])
+            parts.append(f'<b>{html.escape(platform["name"])}</b>: <a href="{recommended_client["url"]}">{name}</a>')
+    
+    
+    parts.append("")
+
+    parts.append("🔗 <b>Шаг 2. Добавьте VPN</b>\n")
+    parts.append("1. Скопируйте ключ-ссылку (из сообщения выше 🔼)")
+    parts.append("2. Откройте приложение-клиент")
+    parts.append("3. Импортируйте конфигурацию — отсканируйте QR или вставьте ссылку\n")
+
+    parts.append("▶️ <b>Шаг 3. Подключитесь</b>\n")
+    parts.append("1. Выберите сервер (рекомендуем Germany, vless ⭐)")
+    parts.append("2. Нажмите «Подключиться» и разрешите добавление VPN-конфигурации\n")
+
+    parts.append("✅ <b>Готово!</b> Теперь интернет работает через VPN.")
+
+    return "\n".join(parts)

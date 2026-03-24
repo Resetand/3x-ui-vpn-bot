@@ -1,0 +1,82 @@
+{
+  "ios": {
+    "name": "iOS (iPhone, iPad)",
+    "clients": [
+      {
+        "name": "v2RayTun",
+        "url": "https://apps.apple.com/ru/app/id6476628951",
+        "recommended": true,
+        "description": "Простой вариант с базовой функциональностью, подходит для быстрого старта"
+      },
+      {
+        "name": "Shadowrocket",
+        "url": "https://apps.apple.com/ru/app/id932747118",
+        "description": "Платный, но очень стабильный и мощный"
+      },
+      {
+        "name": "Happ",
+        "url": "https://apps.apple.com/ru/app/id6746188973",
+        "description": "Также простой и удобный клиент"
+      }
+    ]
+  },
+  "android": {
+    "name": "Android",
+    "clients": [
+      {
+        "name": "Hiddify",
+        "url": "https://github.com/hiddify/hiddify-app/releases",
+        "description": "Простой клиент с автонастройкой. Хорошо подходит новичкам",
+        "recommended": true
+      },
+      {
+        "name": "v2rayNG",
+        "url": "https://github.com/2dust/v2rayNG/releases",
+        "description": "Самый распространённый V2Ray/Xray клиент. Надёжный, минималистичный"
+      },
+      {
+        "name": "Happ",
+        "url": "https://play.google.com/store/apps/details?id=com.happproxy",
+        "description": "Самый простой и удобный клиент"
+      }
+    ]
+  },
+  "windows": {
+    "name": "Windows",
+    "clients": [
+      {
+        "name": "Hiddify",
+        "url": "https://github.com/hiddify/hiddify-app/releases",
+        "description": "Современный интерфейс, простой в использовании",
+        "recommended": true
+      },
+      {
+        "name": "v2rayN",
+        "url": "https://github.com/2dust/v2rayN/releases",
+        "description": "Самый простой и надёжный вариант"
+      },
+
+      {
+        "name": "NekoRay",
+        "url": "https://github.com/MatsuriDayo/nekoray/releases",
+        "description": "Более продвинутый клиент"
+      }
+    ]
+  },
+  "macos": {
+    "name": "MacOS (MacBook, iMac)",
+    "clients": [
+      {
+        "name": "v2RayTun",
+        "url": "https://apps.apple.com/ru/app/id6476628951",
+        "recommended": true,
+        "description": "Простой вариант с базовой функциональностью, подходит для быстрого старта"
+      },
+      {
+        "name": "Shadowrocket",
+        "url": "https://apps.apple.com/ru/app/id932747118",
+        "description": "Платный, но очень стабильный и мощный"
+      }
+    ]
+  }
+}
