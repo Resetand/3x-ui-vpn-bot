@@ -122,9 +122,9 @@ async def _provision(
             else:
                 # vless, vmess
                 client_data["id"] = client_uuid
-                # flow (xtls-rprx-vision) works with VLESS over TCP or XHTTP
+                # flow only works with VLESS + TCP (xtls-rprx-vision for Reality/XTLS)
                 network = inbound.get("streamSettings", {}).get("network", "tcp")
-                if protocol == "vless" and network in ("tcp", "xhttp") and vless_flow:
+                if protocol == "vless" and network == "tcp" and vless_flow:
                     client_data["flow"] = vless_flow
                 else:
                     client_data["flow"] = ""
