@@ -3,10 +3,10 @@
     "name": "iOS (iPhone, iPad)",
     "clients": [
       {
-        "name": "v2RayTun",
-        "url": "https://apps.apple.com/ru/app/id6476628951",
-        "recommended": true,
-        "description": "Простой вариант с базовой функциональностью, подходит для быстрого старта"
+        "name": "Happ",
+        "url": "https://apps.apple.com/ru/app/id6746188973",
+        "description": "Простой и удобный клиент",
+        "recommended": true
       },
       {
         "name": "Shadowrocket",
@@ -14,9 +14,9 @@
         "description": "Платный, но очень стабильный и мощный"
       },
       {
-        "name": "Happ",
-        "url": "https://apps.apple.com/ru/app/id6746188973",
-        "description": "Также простой и удобный клиент"
+        "name": "v2RayTun",
+        "url": "https://apps.apple.com/ru/app/id6476628951",
+        "description": "Простой вариант с базовой функциональностью, подходит для быстрого старта"
       }
     ]
   },
