@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from typing import Any
@@ -7,6 +8,10 @@ from typing import Any
 import httpx
 
 logger = logging.getLogger(__name__)
+
+_TRANSIENT_EXCEPTIONS = (httpx.ReadError, httpx.ConnectError, httpx.RemoteProtocolError)
+_MAX_RETRIES = 3
+_RETRY_DELAY = 1.0
 
 
 class XUIAuthError(Exception):
@@ -16,8 +21,7 @@ class XUIAuthError(Exception):
 class XUIClient:
     def __init__(self, host: str, port: int, webbasepath: str, username: str, password: str) -> None:
         is_localhost = host in ("localhost", "127.0.0.1")
-        protocol = "http" if is_localhost else "https"
-        self._base_url = f"{protocol}://{host}:{port}{webbasepath}"
+        self._base_url = f"https://{host}:{port}{webbasepath}"
         self._username = username
         self._password = password
         self._client = httpx.AsyncClient(base_url=self._base_url, timeout=30.0, follow_redirects=True, verify=not is_localhost)
@@ -38,19 +42,32 @@ class XUIClient:
         logger.info("Logged in to 3x-ui panel")
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> dict:
-        if not self._logged_in:
-            await self.login()
+        for attempt in range(_MAX_RETRIES):
+            try:
+                if not self._logged_in:
+                    await self.login()
 
-        resp = await self._client.request(method, path, **kwargs)
+                resp = await self._client.request(method, path, **kwargs)
 
-        # Auto re-login on session expiry (3x-ui returns 404 or 401 when the session cookie is stale)
-        if resp.status_code in (401, 404) or (resp.is_redirect and "/login" in str(resp.headers.get("location", ""))):
-            logger.info("Session expired (HTTP %d), re-logging in", resp.status_code)
-            await self.login()
-            resp = await self._client.request(method, path, **kwargs)
+                # Auto re-login on session expiry (3x-ui returns 404 or 401 when the session cookie is stale)
+                if resp.status_code in (401, 404) or (resp.is_redirect and "/login" in str(resp.headers.get("location", ""))):
+                    logger.info("Session expired (HTTP %d), re-logging in", resp.status_code)
+                    await self.login()
+                    resp = await self._client.request(method, path, **kwargs)
 
-        resp.raise_for_status()
-        return resp.json()
+                resp.raise_for_status()
+                return resp.json()
+            except _TRANSIENT_EXCEPTIONS as exc:
+                self._logged_in = False
+                if attempt < _MAX_RETRIES - 1:
+                    delay = _RETRY_DELAY * (attempt + 1)
+                    logger.warning("Transient error on %s %s (attempt %d/%d): %s — retrying in %.1fs",
+                                   method, path, attempt + 1, _MAX_RETRIES, exc, delay)
+                    await asyncio.sleep(delay)
+                else:
+                    logger.error("Transient error on %s %s after %d attempts: %s", method, path, _MAX_RETRIES, exc)
+                    raise
+        raise RuntimeError("unreachable")
 
     async def get_inbounds(self) -> list[dict]:
         """Retrieve all inbounds. Parses settings and streamSettings JSON strings into dicts."""
