@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher
 
 from bot.config import Settings, load_settings
 from bot.handlers.start import router as start_router
-from bot.handlers.create import router as create_router
+from bot.handlers.issue import router as issue_router
 from bot.xui.client import XUIClient
 
 logging.basicConfig(
@@ -33,7 +33,7 @@ async def main() -> None:
 
     # Register handlers
     dp.include_router(start_router)
-    dp.include_router(create_router)
+    dp.include_router(issue_router)
 
     # Inject dependencies into handler kwargs
     dp["settings"] = settings
