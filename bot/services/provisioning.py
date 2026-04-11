@@ -47,10 +47,12 @@ async def ensure_client_exists(
     host: str,
     sub_url_base: str | None,
     vless_flow: str = "",
+    slug: str | None = None,
+    comment: str | None = None,
 ) -> ProvisioningResult:
     """Ensure the user has a client in every configured inbound. Idempotent."""
     async with _get_user_lock(user_id):
-        return await _provision(xui, user_id, first_name, username, inbound_ids, host, sub_url_base, vless_flow)
+        return await _provision(xui, user_id, first_name, username, inbound_ids, host, sub_url_base, vless_flow, slug, comment)
 
 
 async def _provision(
@@ -62,14 +64,18 @@ async def _provision(
     host: str,
     sub_url_base: str | None,
     vless_flow: str = "",
+    slug: str | None = None,
+    comment: str | None = None,
 ) -> ProvisioningResult:
     all_inbounds = await xui.get_inbounds()
     inbound_map = {ib["id"]: ib for ib in all_inbounds}
 
-    sub_id = f"{user_id}"
+    identifier = slug if slug else f"{user_id}"
+    sub_id = identifier
     existing_sub_id: str | None = None
 
-    comment = f"{first_name} (@{username})" if username else first_name
+    if comment is None:
+        comment = f"{first_name} (@{username})" if username else first_name
 
     for iid in inbound_ids:
         inbound = inbound_map.get(iid)
@@ -77,7 +83,7 @@ async def _provision(
             logger.warning("Inbound %d from allowlist not found in 3x-ui — skipping", iid)
             continue
 
-        email = f"{iid}_{user_id}"
+        email = f"{iid}_{identifier}"
         clients = inbound.get("settings", {}).get("clients", [])
 
         # Look for existing client

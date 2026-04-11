@@ -19,6 +19,7 @@ class Settings:
     allowed_chat_id: int | None  # Telegram group/supergroup ID for membership check
     sub_url_base: str | None
     vless_flow: str
+    admin_telegram_id: int | None
 
 
 def load_settings() -> Settings:
@@ -58,6 +59,9 @@ def load_settings() -> Settings:
     sub_url_base = os.environ.get("SUB_URL_BASE", "").strip() or None
     vless_flow = os.environ.get("VLESS_FLOW", "").strip()
 
+    raw_admin_id = os.environ.get("ADMIN_TELEGRAM_ID", "").strip()
+    admin_telegram_id = int(raw_admin_id) if raw_admin_id else None
+
     return Settings(
         telegram_bot_token=telegram_bot_token,
         xui_host=xui_host,
@@ -70,4 +74,5 @@ def load_settings() -> Settings:
         allowed_chat_id=allowed_chat_id,
         sub_url_base=sub_url_base,
         vless_flow=vless_flow,
+        admin_telegram_id=admin_telegram_id,
     )
