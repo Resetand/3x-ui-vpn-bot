@@ -75,7 +75,7 @@ async def handle_start(message: types.Message, settings: Settings, xui: XUIClien
     qr_buf = generate_qr_png(result.sub_url)
     await message.answer_photo(
         BufferedInputFile(qr_buf.read(), filename="subscription_qr.png"),
-        caption=f"\n\n🔑 Ваш ключ-ссылка: <b><code>{html.escape(result.sub_url)}</code></b>\n\n"
+        caption=f"\n\n🔑 Ваш ключ-ссылка: <code><b>{html.escape(result.sub_url)}</b></code>\n\n"
         parse_mode="HTML",
     )
 
