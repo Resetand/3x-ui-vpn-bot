@@ -24,20 +24,20 @@
     "name": "Android",
     "clients": [
       {
+        "name": "Happ",
+        "url": "https://play.google.com/store/apps/details?id=com.happproxy",
+        "description": "Самый простой и удобный клиент",
+        "recommended": true
+      },
+      {
         "name": "Hiddify",
         "url": "https://github.com/hiddify/hiddify-app/releases",
-        "description": "Простой клиент с автонастройкой. Хорошо подходит новичкам",
-        "recommended": true
+        "description": "Простой клиент с автонастройкой. Хорошо подходит новичкам"
       },
       {
         "name": "v2rayNG",
         "url": "https://github.com/2dust/v2rayNG/releases",
         "description": "Самый распространённый V2Ray/Xray клиент. Надёжный, минималистичный"
-      },
-      {
-        "name": "Happ",
-        "url": "https://play.google.com/store/apps/details?id=com.happproxy",
-        "description": "Самый простой и удобный клиент"
       }
     ]
   },
@@ -45,10 +45,15 @@
     "name": "Windows",
     "clients": [
       {
+        "name": "Happ",
+        "url": "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe",
+        "description": "Простой и удобный клиент",
+        "recommended": true
+      },
+      {
         "name": "Hiddify",
         "url": "https://github.com/hiddify/hiddify-app/releases",
-        "description": "Современный интерфейс, простой в использовании",
-        "recommended": true
+        "description": "Современный интерфейс, простой в использовании"
       },
       {
         "name": "v2rayN",
@@ -67,9 +72,14 @@
     "name": "MacOS (MacBook, iMac)",
     "clients": [
       {
+        "name": "Happ",
+        "url": "https://apps.apple.com/ru/app/id6746188973",
+        "description": "Простой и удобный клиент",
+        "recommended": true
+      },
+      {
         "name": "v2RayTun",
         "url": "https://apps.apple.com/ru/app/id6476628951",
-        "recommended": true,
         "description": "Простой вариант с базовой функциональностью, подходит для быстрого старта"
       },
       {
